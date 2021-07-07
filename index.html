@@ -1,0 +1,402 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>Circuito RC</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+    <link rel="stylesheet" href="http://code.ionicframework.com/ionicons/2.0.1/css/ionicons.min.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js" integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1" crossorigin="anonymous"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js" integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous"></script>
+
+</head>
+
+<body class="etivity">
+
+<section>
+	<div class="container">
+		<h1>Circuito RC</h1>
+		<div class="row py-4 mb-5 mx-auto">
+			<div class="col-lg-6">
+				<p>Questa e-tivity permette allo studente di realizzare dei test di carica e scarica di un condensatore all’interno di un circuito RC. Lo studente avrà a disposizione un alimentatore ed un carico elettronico programmabili. L’obiettivo è studiare l’andamento di tensione e corrente all’interno del circuito. Al termine dell’esperimento lo studente dovrà inviare una relazione di riepilogo al docente.</p>
+				<hr>
+				<p><i class="ion-person pl-1"></i>Responsabile E-Tivity: <span>Prof. Enrico Bocci</span></p>
+				<p><i class="ion-person-stalker"></i>Utenti in laboratorio in questo momento: <span id="connectedClients">0</span></p>
+				<p><i class="ion-pull-request pl-1"></i>Stato circuito: <span id="status">Aperto</span></p>
+			</div>
+			<div class="col-lg-6 streaming">
+				<img id="image" class="cam" width="100%" height="100%">
+				<img id="image2" class="cam" width="100%" height="100%" style="display:none">
+			</div>
+			<div class="row"></div>
+			<div class="col-6"><button id="btn-reset" class="btn btn-primary float-right my-4">Reset Circuito</button></div>
+			<div class="col-6"><button id="btn-webcam" class="btn btn-primary float-right my-4">Cambia Webcam</button></div>
+		</div>
+	</div> 
+</section>
+
+<section>
+	<div class="container">
+		<h4 class="text-center">Real Time Graphs: tensione del condensatore e corrente nel circuito</h4>
+		<div class="row mt-5">
+			<div class="col-lg-6">
+				<canvas id="chartTensione" style="width:100%"></canvas>
+				<div class="my-4">
+					<p class="text-center">Tensione Attuale del Condensatore (VOLT)</p>
+					<p class="text-center tensioneCondensatore"></p>
+				</div>
+			</div>
+			<div class="col-lg-6">
+				<div id="graficoCarica">
+					<canvas id="chartCorrenteCarica"></canvas>
+					<div class="my-4">
+						<p class="text-center">Intensità di Corrente nel Circuito (AMPERE)</p>
+						<p class="text-center correnteCarica"></p>	
+					</div>
+				</div>
+				<div id="graficoScarica" style="display:none">
+					<canvas id="chartCorrenteScarica"></canvas>
+					<div class="my-4">
+						<p class="text-center">Intensità di Corrente nel Circuito (AMPERE)</p>
+						<p class="text-center correnteScarica"></p>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+</section>
+
+<section>
+	<div class="container">
+		<h4 class="text-center">Esperimento: seleziona le impostazioni ed avvia un test</h4>
+		<div class="row my-5">
+			<div class="col-lg-6">
+				<h5 class="text-center">Impostazioni esperimento</h5>
+				<div id="step1" class="pt-5">
+					<h5><span class="num">1</span>Scegli il tipo di esperimento</h5>
+					<hr>
+					<div class="col-12 pt-2 px-0">
+						<div class="form-group  mx-auto">
+							<div class="icheck-success d-inline mr-5">
+								<input type="radio" name="chooseTest" id="caricaCondensatore" value="carica" required>
+								<label for="caricaCondensatore">
+									Carica condensatore
+								</label>
+							</div>
+							<div class="icheck-success d-inline">
+								<input type="radio" name="chooseTest" id="scaricaCondensatore" value="scarica">
+								<label for="scaricaCondensatore">
+									Scarica condensatore
+								</label>
+							</div>
+						</div>
+						<hr>
+						<div class="col-12">
+							<button id="btn-choose-test" type="button" class="button setting float-right btn btn-primary">Avanti</button>
+						</div>
+					</div>
+				</div>
+
+				<div id="step2" class=" pt-5">
+					<h5><span class="num">2</span>Seleziona l'intensità di corrente nel circuito</h5>
+					<hr>
+					<div class="col-12 pt-2 px-0">
+						<div class="slidecontainer">
+							<input type="range" name="caricaAmpereInputName" id="caricaAmpereInputId" value="0.135" min="0.0" max="5.0" oninput="caricaAmpereOutputId.value = caricaAmpereInputId.value" step="0.005">
+    						<output name="caricaAmpereOutputName" id="caricaAmpereOutputId">0.135</output> Ampere
+						</div>
+						<hr>
+						<div class="col-12">
+							<button id="btn-carica-ampere-next" type="button" class="button setting float-right ml-3 btn btn-primary">Avanti</button>
+							<button id="btn-carica-ampere-back" type="button" class="button light setting float-right btn btn-primary">Indietro</button>
+						</div>
+					</div>
+				</div>
+
+				<div id="step3" class=" pt-5">
+					<h5><span class="num">3</span>Seleziona la tensione dell'alimentatore</h5>
+					<hr>
+					<div class="col-12 pt-2 px-0">
+						<div class="slidecontainer">
+							<input type="range" name="caricaVoltInputName" id="caricaVoltInputId" value="0.135" min="0.0" max="12.0" oninput="caricaVoltOutputId.value = caricaVoltInputId.value" step="0.25">
+    						<output name="caricaAmpereVoltName" id="caricaVoltOutputId">6.50</output> Volt
+						</div>
+						<hr>
+						<div class="col-12">
+							<button id="btn-carica-volt-next" type="button" class="button setting float-right ml-3 btn btn-primary">Avanti</button>
+							<button id="btn-carica-volt-back" type="button" class="button light setting float-right btn btn-primary">Indietro</button>
+						</div>
+					</div>
+				</div>
+
+				<div id="step4" class=" pt-5">
+					<h5><span class="num">4</span>Seleziona la resistenza nel circuito</h5>
+					<hr>
+					<div class="col-12 pt-2 px-0">
+						<div class="slidecontainer">
+							<input type="range" name="caricaOhmInputName" id="caricaOhmInputId" value="1000" min="0" max="4000" oninput="caricaOhmOutputId.value = caricaOhmInputId.value" step="50">
+    						<output name="caricaOhmVoltName" id="caricaOhmOutputId">1000</output> Ohm
+						</div>
+						<hr>
+						<div class="col-12">
+							<button id="btn-carica-ohm-next" type="button" class="button setting float-right ml-3 btn btn-primary">Fine</button>
+							<button id="btn-carica-ohm-back" type="button" class="button light setting float-right btn btn-primary">Indietro</button>
+						</div>
+					</div>
+				</div>
+
+				<div id="step5" class=" pt-5">
+					<h5><span class="num">2</span>Scegli la modalità di scarica</h5>
+					<hr>
+					<div class="col-12 pt-2 px-0">
+						<div class="form-group  mx-auto">
+							<div class="icheck-success d-inline mr-5">
+								<input type="radio" name="chooseMode"  value="CC">
+								<label for="caricaCondensatore">
+									Corrente costante
+								</label>
+							</div>
+							<div class="icheck-success d-inline">
+								<input type="radio" name="chooseMode"  value="CP">
+								<label for="scaricaCondensatore">
+									Potenza costante
+								</label>
+							</div>
+						</div>
+						<hr>
+						<div class="col-12">
+							<button id="btn-scarica-mode-next" type="button" class="button setting float-right ml-3 btn btn-primary">Avanti</button>
+							<button id="btn-scarica-mode-back" type="button" class="button light setting float-right btn btn-primary">Indietro</button>
+						</div>
+					</div>
+				</div>
+
+				<div id="step6" class="pt-5">
+					<h5><span class="num">3</span>Imposta la corrente di scarica</h5>
+					<hr>
+					<div class="col-12 pt-2 px-0">
+						<div class="slidecontainer">
+						<input type="range" name="scaricaAmpereInputName" id="scaricaAmpereInputId" value="0" min="0.0" max="3.0" oninput="scaricaAmpereOutputId.value = scaricaAmpereInputId.value" step="0.005">
+    						<output name="scaricaAmpereOutputName" id="scaricaAmpereOutputId">0.135</output> Ampere
+						</div>
+						<hr>
+						<div class="col-12">
+							<button id="btn-scarica-ampere-next" type="button" class="button setting float-right ml-3 btn btn-primary">Fine</button>
+							<button id="btn-scarica-ampere-back" type="button" class="button light setting float-right btn btn-primary">Indietro</button>
+						</div>
+					</div>
+				</div>
+
+				<div id="step7" class="pt-5">
+					<h5><span class="num">3</span>Imposta l'assorbimento durante la scarica</h5>
+					<hr>
+					<div class="col-12 pt-2 px-0">
+						<div class="slidecontainer">
+						<input type="range" name="scaricaWattInputName" id="scaricaWattInputId" value="0" min="0.0" max="150" oninput="scaricaWattOutputId.value = scaricaWattInputId.value" step="10">
+    						<output name="scaricaWattOutputName" id="scaricaWattOutputId">0</output> Watt
+						</div>
+						<hr>
+						<div class="col-12">
+							<button id="btn-scarica-watt-next" type="button" class="button setting float-right ml-3 btn btn-primary">Fine</button>
+							<button id="btn-scarica-watt-back" type="button" class="button light setting float-right btn btn-primary">Indietro</button>
+						</div>
+					</div>
+				</div>
+
+				<div id="step8">
+					<h5>Input Test</h5>
+					<div id="riepilogoTest"></div>
+					<hr>
+					<div id="avviaTest" class="col-12">
+						<button id="btn-avvia-test-next" type="button" class="button setting float-right ml-3 btn btn-primary">Avvia Test</button>
+						<button id="btn-avvia-test-back" type="button" class="button light setting float-right btn btn-primary">Indietro</button>
+					</div>
+					<div id="stopTest" class="col-12 mt-5 pl-0">
+						<h5>Output Test</h5>
+						<div id="timer" class="float-left w-100">
+							<p>Durata Test: <span class="basicUsage">00:00:00</span></p>
+							<p>Tensione di partenza: <span class="tensioneStart"></span></p>
+							<p>Tensione attuale: <span class="tensioneCondensatore"></span></p>
+							<p>Corrente attuale: <span class="correnteAttuale"></span></p>
+							<button id="btn-interrompi-test" type="button" class="button setting float-right ml-3 btn btn-primary">Stop Test</button>
+						</div>
+					</div>
+					<div id="outputTest" class="col-12 mt-5 pl-0">
+						<h5>Output Test</h5>
+						<p>Durata Test: <span class="basicUsage">00:00:00</span></p>
+						<p>Tensione di partenza: <span class="tensioneStart"></span></p>
+						<p>Tensione a fine test: <span class="tensioneEnd"></span></p>
+						<p>Tensione attuale: <span class="tensioneCondensatore"></span></p>
+						<p>Corrente attuale: <span class="correnteAttuale"></span></p>
+						<button id="btn-output-test" type="button" class="button setting float-right ml-3 btn btn-primary">Risultati</button>
+						<button id="btn-avvia-nuovo-test" type="button" class="button light setting float-right btn btn-primary">Nuovo Test</button>
+					</div>
+				</div>
+				<div class="my-5 py-3"> </div>
+			</div>
+			<div class="col-lg-6">
+				<h5 class="text-center">Chat/Log di laboratorio</h5>
+				<div class="card direct-chat-primary">
+					<div class="card-body direct-chat">
+						<div id="messages" class="direct-chat-messages" style="height:283px"></div>
+					</div>
+					<div class="card-footer">
+						<form id="chat">
+							<div class="input-group">
+								<input id="m" type="text" name="message" placeholder="Scrivi un messaggio..." class="form-control">
+								<span class="input-group-append">
+									<button type="submit" class="btn btn-primary">Invia</button>
+								</span>
+							</div>
+						</form>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+</section>
+<section id="output">
+	<div class="container">
+		<h4 class="text-center">Risultati ottenuti: andamento di tensione e corrente durante il test</h4>
+		<div class="my-5" id="outputGrafico"></div>
+		<div class="my-5">
+			<table id="outputTabella" class="text-center">
+				<thead>
+					<tr><th>Tempo (s)</th><th>Corrente (A)</th><th>Tensione (V)</th></tr>
+				</thead>
+				<tbody></tbody>
+			</table>
+			<div class="card-footer bg-transparent py-5">
+				<input type="button" class="button float-right btn btn-primary" id="btn-save-data" value="Salva .csv" onclick="saveFile()" />
+			</div>
+		</div>
+	</div>
+</section>
+	
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/2.0.0/socket.io.js"></script>
+<script type="text/javascript" src="https://www.chartjs.org/dist/2.9.3/Chart.min.js"></script>
+<script type="text/javascript" src="https://www.chartjs.org/samples/latest/utils.js"></script>
+<script type="text/javascript" src="https://cdn.jsdelivr.net/npm/moment@2.24.0/min/moment.min.js"></script>
+<script type="text/javascript" src="https://cdn.jsdelivr.net/npm/chart.js@2.8.0"></script>
+<script type="text/javascript" src="https://cdn.jsdelivr.net/npm/chartjs-plugin-streaming@1.8.0"></script>
+<script type="text/javascript" src="https://cdn.jsdelivr.net/npm/easytimer@1.1.1/src/easytimer.js"></script>
+<script type="text/javascript" src="js/circuitoRC.js"></script>
+
+<style>
+	body.etivity {
+		font-family: "PT Sans Narrow",sans-serif;
+		font-size: 14px;
+		letter-spacing: 1px;
+    	line-height: 1.4em;
+		color: #333;
+	}
+	.etivity section {
+		margin-top:60px;
+	}
+	.etivity h1 {
+		color: #379975;
+		font-size: 30px;
+		font-family: inherit;
+	}
+	.etivity h4 {
+		font-size: 18px;
+	}
+	.etivity h5 {
+		font-size: 16px;
+	}
+	.etivity .btn-primary {
+		background: #379975;
+		border-color: #379975;
+		font-size: 12px;
+	}
+	.etivity .btn-primary:hover {
+		background: #333;
+		border-color: #333;
+	}
+	.etivity .btn-primary.focus, .etivity .btn-primary:focus {
+    	box-shadow: none;
+	}
+	.etivity .btn-primary:not(:disabled):not(.disabled):active {
+		background: #379975;
+		border-color: #379975;
+	}
+	.etivity .streaming {
+		max-height: 300px;
+	}
+	.etivity i {
+		font-size: 24px;
+		margin-right: 10px;
+		vertical-align: bottom;
+	}
+	.etivity #messages i {
+		font-size:12px;
+		letter-spacing: 0px;
+	}
+    .etivity #step2, 
+	.etivity #step3, 
+	.etivity #step4, 
+	.etivity #step5, 
+	.etivity #step6, 
+	.etivity #step7, 
+	.etivity #step8, 
+	.etivity #stopTest, 
+	.etivity #outputTest, 
+	.etivity #output {
+        display: none;
+    }
+    .etivity #riepilogoTest span, 
+	.etivity #outputTest span, 
+	.etivity #timer span {
+        font-weight: 600;
+        margin-left: 10px;
+    }
+    .etivity .direct-chat {
+        overflow: scroll;
+    }
+    .etivity tr:nth-child(even){
+		background-color: #f2f2f2;
+	}
+    .etivity #stats tr:hover {
+		background-color: #379975;
+	}
+    .etivity th {
+        padding-top: 12px;
+        padding-bottom: 12px;
+        text-align: left;
+        background-color: #1a1a1a;
+        color: white;
+    }
+    .etivity td, 
+	.etivity th {
+        padding: 0.6rem 3rem;
+		width: 3%;
+    	text-align: left;
+    }
+    .etivity .form-control {
+        padding: .6rem .75rem .3rem;
+        font-size: 12px;
+    }
+    .etivity select {
+        -webkit-appearance: none;
+        -moz-appearance: none;
+        text-indent: 1px;
+        text-overflow: '';
+    }
+	.etivity input[type="range"] {
+		width: 70%;
+		margin-right: 10px;
+	}
+	.etivity .num {
+		background: #379975;
+		padding: 5px 10px;
+		color: white;
+		margin-right: 10px;
+	}
+</style>
+
+
+</body>
+</html>
+
